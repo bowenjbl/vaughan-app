@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Drivers\TinyUrlDriver;
 use GuzzleHttp\ClientInterface;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Tests\TestCase;
 
 class TinyUrlShortenerTest extends TestCase
@@ -21,5 +22,18 @@ class TinyUrlShortenerTest extends TestCase
         $shortenedUrl = $this->shortener->generate('https://www.google.es/');
         $this->assertNotEmpty($shortenedUrl);
         $this->assertNotNull($shortenedUrl);
+    }
+
+    public function test_it_create_the_same_link(): void
+    {
+        $link1 = $this->shortener->generate('https://www.google.es/');
+        $link2 = $this->shortener->generate('https://www.google.es/');
+        $this->assertEquals($link1, $link2);
+    }
+
+    public function test_failure(): void
+    {
+        $this->expectException(HttpResponseException::class);
+        $this->shortener->generate('google');
     }
 }

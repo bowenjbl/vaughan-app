@@ -2,13 +2,12 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Http\Response;
 use Tests\TestCase;
 
 class CreateShortUrlTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
+
     public function test_the_application_returns_a_successful_response(): void
     {
         $response = $this->withHeaders([
@@ -19,6 +18,20 @@ class CreateShortUrlTest extends TestCase
             'url' => 'https://www.google.es/'
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(Response::HTTP_OK);
+    }
+
+    public function test_the_application_returns_bad_request_response()
+    {
+        $response = $this->withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer (())'
+        ])->postJson('/api/v1/short-urls', [
+            'url' => ''
+        ]);
+
+        $response->assertStatus(Response::HTTP_BAD_REQUEST);
+        $this->assertFalse($response['success']);
     }
 }
