@@ -2,9 +2,11 @@
 
 namespace App\Managers;
 
+use App\Drivers\BitlyDriver;
 use App\Drivers\TinyUrlDriver;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -25,6 +27,11 @@ class UrlShortener
         return new TinyUrlDriver($this->app->make(ClientInterface::class), $config);
     }
 
+    protected function createBitlyDriver(array $config)
+    {
+        return new BitlyDriver($this->app->make(ClientInterface::class), $config);
+    }
+
     protected function resolveDriver($name)
     {
         $config = $this->app['config']["urlshortener.shorteners.{$name}"];
@@ -41,6 +48,15 @@ class UrlShortener
 
     public function get(string $url): string
     {
-        return $this->driver->generate($url);
+        $shortener = $this->app['config']['urlshortener.default'];
+        $hash = md5($shortener . ":" . $url);
+        $ttl = $this->app['config']['urlshortener.ttl_cache'];
+        if (Cache::has($hash)) {
+            $response = Cache::get($hash);
+        } else {
+            $response = $this->driver->generate($url);
+            Cache::put($hash, $response, $ttl);
+        }
+        return $response;
     }
 }
