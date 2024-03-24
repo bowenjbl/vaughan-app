@@ -10,7 +10,7 @@ final class BearerToken
     {
         $authHeader = $request->header('Authorization');
         $string = $request->bearerToken();
-        if (!is_null($authHeader)) {
+        if (!is_null($authHeader) && str_contains($authHeader, 'Bearer')) {
             if (preg_match('/^[{}\[\]\(\)]*$/', $string)) {
                 $stack = [];
                 $mapping = [
