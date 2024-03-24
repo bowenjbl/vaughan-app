@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(ClientInterface::class, Client::class);
         $this->app->bind('urlshortener', function($app){
-            $shortener = 'tiny_url';
+            $shortener = $app['config']['urlshortener.default'];
             return new \App\Managers\UrlShortener($app, $shortener);
         });
     }

@@ -11,7 +11,7 @@ final class TinyUrlDriver extends BaseDriver
     public function generate(string $url): string
     {
         $options = [
-            'base_uri' => 'https://tinyurl.com',
+            'base_uri' => $this->config['base_uri'],
             'query' => [
                 'url' => $url
             ]

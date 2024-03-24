@@ -6,6 +6,7 @@ use App\Drivers\TinyUrlDriver;
 use GuzzleHttp\ClientInterface;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class UrlShortener
 {
@@ -26,8 +27,16 @@ class UrlShortener
 
     protected function resolveDriver($name)
     {
-        $methodName = 'create' . Str::studly($name) . 'Driver';
-        return $this->{$methodName}([]);
+        $config = $this->app['config']["urlshortener.shorteners.{$name}"];
+        if (is_null($config)) {
+            throw new InvalidArgumentException("Driver: {$name} not defined");
+        }
+        $methodName = 'create' . Str::studly($config['driver']) . 'Driver';
+
+        if (method_exists($this, $methodName))
+            return $this->{$methodName}($config);
+
+        throw new InvalidArgumentException("Driver [{$config['driver']}] is not supported.");
     }
 
     public function get(string $url): string
